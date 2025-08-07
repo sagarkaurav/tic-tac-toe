@@ -18,6 +18,7 @@ jobs:
       uses: digitalocean/action-doctl@v2
       with:
         token: ${{ secrets.DIGITAL_OCEAN_REGISTRY_PASSWORD }}
+        version: '1.135.0'
     - name: Build container image
       run: docker build -t ${{ env.DIGITAL_OCEAN_REGISTRY }}${{env.IMAGE_NAME}}:latest
     - name: Log in to DigitalOcean Container Registry with short-lived credentials
