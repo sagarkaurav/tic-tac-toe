@@ -32,6 +32,6 @@ jobs:
         file: ./Dockerfile
         push: true
         tags: ${{ env.DIGITAL_OCEAN_REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-        cache-from: type=registry,ref=${{ env.DIGITAL_OCEAN_REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache
-        cache-to: type=registry,ref=${{ env.DIGITAL_OCEAN_REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache,mode=max
+        # cache-from: type=registry,ref=${{ env.DIGITAL_OCEAN_REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache
+        # cache-to: type=registry,ref=${{ env.DIGITAL_OCEAN_REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache,mode=max
 
