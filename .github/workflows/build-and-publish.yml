@@ -11,7 +11,6 @@ jobs:
   build_and_publish:
     runs-on: ubuntu-latest
     steps:
-    - name: checkout to repo
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
