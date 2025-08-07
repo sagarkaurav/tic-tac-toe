@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic Tac Toe</title>
+    <style>
+        html,
+        body {
+            height: 100%;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: oklch(87% 0.065 274.039);
+            padding-left: 1rem;
+            padding-right: 1rem;
+            font-family: sans-serif;
+        }
+
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .gameLayout {
+            width: 420px;
+            height: 400px;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+        }
+
+        .gameLayout>div {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f1f1f1;
+            font-size: 34px;
+            text-align: center;
+        }
+
+        .bb {
+            border-bottom: 5px solid black;
+        }
+
+        .br {
+            border-right: 5px solid black;
+        }
+
+        .bl {
+            border-left: 5px solid black;
+        }
+
+        .section {
+            cursor: pointer;
+        }
+
+        .notAllowed {
+            cursor: not-allowed;
+        }
+
+        #msg {
+            text-align: center;
+            font-size: 2rem;
+            color: purple;
+            margin-bottom: 2rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="msg"></div>
+    <div class="container">
+        <div class="gameLayout">
+        </div>
+    </div>
+    <script>
+        var gameBoardID = "{{ .GameBoardID }}";
+        var playValueString = "{{ .PlayValue }}";
+        var playValue = parseInt(playValueString);
+        var isMyTurn = false;
+        var gameState = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+        let isHTTPS = false;
+        window.onload = () => {
+            if (window.location.protocol == "https") {
+                isHTTPS = true;
+            }
+            let protocol = isHTTPS ? 'wss://' : 'ws://';
+            let host = window.location.host
+            let wsURL = `${protocol}/${host}/ws/${gameBoardID}`;
+            var ws = new WebSocket(wsURL)
+            ws.onopen = () => {
+                setBoard(gameState);
+            };
+
+            ws.onmessage = (event) => {
+                let a = document.getElementById("msg");
+                const data = JSON.parse(event.data);
+                if (data.type) {
+                    if (data.type == "info") {
+                        a.innerHTML = data.msg
+                    } else if (data.type == "game_state") {
+                        gameState = data.state;
+                        isMyTurn = data.nextMove == playValue;
+                        if (data.nextMove == playValue) {
+                            a.innerHTML = "Its your turn play your move";
+                        } else {
+                            a.innerHTML = "waiting for other play to make move";
+                        }
+                        switch (data.result) {
+                            case -1:
+                                a.innerHTML = "Game is draw"
+                                break;
+                            case playValue:
+                                a.innerHTML = "You won"
+                                break;
+                            case 0:
+                                break;
+                            default:
+                                a.innerHTML = "You lost"
+                        }
+                        setBoard(gameState);
+                    }
+                }
+            };
+
+            ws.onclose = (e) => {
+                console.log(e)
+            };
+
+            ws.onerror = (error) => {
+                console.error("WebSocket error:", error);
+            };
+            const onSectionClick = (e) => {
+                if (!isMyTurn) {
+                    return
+                }
+                const index = parseInt(e.target.getAttribute('data-index'));
+                const currentval = parseInt(e.target.getAttribute('data-currentval'));
+                gameState[index] = playValue;
+                let a = document.getElementById("msg");
+                a.innerHTML = "";
+                ws.send(JSON.stringify(gameState));
+            }
+            let gameLayout = document.getElementsByClassName("gameLayout")[0];
+            gameLayout.addEventListener("click", onSectionClick);
+            const setBoard = (gameState) => {
+                const markers = ["", "x", "o"]
+                const newState = `<div data-index="0" data-currentval="${gameState[0]}" class="section bb br">${markers[gameState[0]]}</div>
+            <div data-index="1" data-currentval="${gameState[1]}" class="section bb br">${markers[gameState[1]]}</div>
+            <div data-index="2" data-currentval="${gameState[2]}" class="section bb">${markers[gameState[2]]}</div>
+            <div data-index="3" data-currentval="${gameState[3]}" class="section bb br">${markers[gameState[3]]}</div>
+            <div data-index="4" data-currentval="${gameState[4]}" class="section bb br">${markers[gameState[4]]}</div>
+            <div data-index="5" data-currentval="${gameState[5]}" class="section bb">${markers[gameState[5]]}</div>
+            <div data-index="6" data-currentval="${gameState[6]}" class="section br">${markers[gameState[6]]}</div>
+            <div data-index="7" data-currentval="${gameState[7]}" class="section br">${markers[gameState[7]]}</div>
+            <div data-index="8" data-currentval="${gameState[8]}" class="section">${markers[gameState[8]]}</div>`
+                let gameLayout = document.getElementsByClassName("gameLayout")[0];
+                gameLayout.innerHTML = newState;
+            }
+        }
+    </script>
+</body>
+
+</html>
